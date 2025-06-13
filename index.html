@@ -1,119 +1,167 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <!-- 모바일 대응 -->
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>사다리게임</title>
-
-  <!-- OG 태그 (카톡 썸네일용) -->
-  <meta property="og:title" content="사다리게임">
-  <meta property="og:description" content="전체 결과 확인하기">
-  <meta property="og:image" content="https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/ladder_thumbnail.png">
-  <meta property="og:url" content="https://devil-destroyer.github.io/ladder/">
-
+  <title>사다리게임 애니메이션</title>
   <style>
-    body {
-      margin: 0; padding: 1rem;
-      font-family: sans-serif;
-      background: #fafafa;
-    }
-    h1 {
-      text-align: center; margin-bottom: 1rem;
-      font-size: 1.4rem;
-    }
-    .wrapper {
-      display: flex;
-      overflow-x: auto;
-      padding-bottom: 1rem;
-    }
-    .card {
-      flex: 0 0 auto;
-      width: 100px;
-      margin: 0 8px;
-      text-align: center;
-    }
-    .name {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .track {
-      position: relative;
-      height: 200px;
-      border-left: 3px solid #e74c3c;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-    .line {
-      position: absolute;
-      top: 0; left: -3px;
-      width: 3px;
-      height: 0;
-      background: #e74c3c;
-      transition: height 1.5s ease-out;
-    }
-    .drink {
-      margin-top: 8px;
-      font-size: 0.9rem;
-    }
+    body { margin:0; padding:1rem; font-family:sans-serif; background:#fafafa; }
+    h1 { text-align:center; margin-bottom:1rem; }
+    #canvas-wrap { overflow-x:auto; }
+    canvas { background:#fff; display:block; margin:0 auto; }
+    #results { margin-top:1rem; font-size:1rem; }
+    #results li { margin:0.5rem 0; }
+    .punishment { color:#e74c3c; font-weight:bold; }
+    .winner     { color:#27ae60; font-weight:bold; }
+    button { display:block; margin:0 auto 1rem; padding:0.5rem 1rem; font-size:1rem; }
   </style>
 </head>
 <body>
-
-  <h1>🎯 사다리 결과 🎯</h1>
-  <div class="wrapper" id="wrapper">
-    <!-- 카드들이 여기로 들어갑니다 -->
+  <h1>🎯 사다리게임</h1>
+  <button id="startBtn">사다리 타기</button>
+  <div id="canvas-wrap">
+    <canvas id="ladder" width="800" height="500"></canvas>
   </div>
+  <ul id="results"></ul>
 
   <script>
-    const participants = [
-      {name:"임상혁",       drink:"딸기요거트샷추가"},
-      {name:"Jinsoo",       drink:"아이스아메리카노"},
-      {name:"세미",         drink:"원하는 음료 선택!!!"},
-      {name:"구자건",       drink:"아이스아메리카노"},
-      {name:"김만성",       drink:"아이스아메리카노"},
-      {name:"김세봉",       drink:"원하는 음료 선택!!!"},
-      {name:"김철동",       drink:"아이스아메리카노"},
-      {name:"김태호",       drink:"아이스아메리카노"},
-      {name:"신유선",       drink:"원하는 음료 선택!!!"},
-      {name:"가보자고~~",  drink:"아이스아메리카노"},
-      {name:"엄기종",       drink:"아이스아메리카노"},
-      {name:"이재승",       drink:"아샷추 2잔 with someone..."},
-      {name:"전덕성(베드로)", drink:"아이스아메리카노"},
-    ];
+  // 1) 참가자 & 음료 & 색
+  const participants = [
+    {name:"Jinsoo", drink:"아이스아메리카노", color:"#3498db"},
+    {name:"세미",   drink:"원하는 음료 선택!!!", color:"#9b59b6"},
+    {name:"구자건", drink:"아이스아메리카노", color:"#e67e22"},
+    {name:"김만성", drink:"아이스아메리카노", color:"#1abc9c"},
+    {name:"김세봉", drink:"원하는 음료 선택!!!", color:"#f1c40f"},
+    {name:"김철동", drink:"아이스아메리카노", color:"#e84393"},
+    {name:"김태호", drink:"아이스아메리카노", color:"#00cec9"},
+    {name:"신유선", drink:"원하는 음료 선택!!!", color:"#0984e3"},
+    {name:"가보자고~~", drink:"아이스아메리카노", color:"#d63031"},
+    {name:"엄기종", drink:"아이스아메리카노", color:"#6c5ce7"},
+    {name:"이재승", drink:"아샷추 2잔 with someone...", color:"#00b894"},
+    {name:"전덕성(베드로)", drink:"아이스아메리카노", color:"#fdcb6e"}
+  ];
+  const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", color:"#e74c3c"};
+  const all = [punishment, ...participants];
 
-    // 배열 섞기
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
+  const canvas = document.getElementById('ladder');
+  const ctx = canvas.getContext('2d');
+  const cols = all.length;
+  const rows = 12;
+  const margin = 50;
+  const cw = canvas.width;
+  const ch = canvas.height;
+  const colW = (cw - margin*2) / (cols-1);
+  const rowH = (ch - margin*2) / rows;
+
+  // 2) 랜덤 사다리 가로줄
+  const rungs = Array.from({length:rows}, () =>
+    Array.from({length:cols-1}, () => Math.random()<0.4)
+  );
+
+  function drawLadder(){
+    ctx.clearRect(0,0,cw,ch);
+    ctx.strokeStyle='#999'; ctx.lineWidth=2;
+    // 세로줄
+    for(let i=0;i<cols;i++){
+      const x = margin + i*colW;
+      ctx.beginPath(); ctx.moveTo(x,margin); ctx.lineTo(x,ch-margin); ctx.stroke();
+      // 이름 그리기
+      ctx.fillStyle = all[i].color;
+      ctx.textAlign='center'; ctx.font='14px sans-serif';
+      ctx.fillText(all[i].name, x, margin - 20);
     }
+    // 가로줄
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols-1;x++){
+        if(rungs[y][x]){
+          const x1=margin + x*colW;
+          const y1=margin + y*rowH;
+          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+colW,y1); ctx.stroke();
+        }
+      }
+    }
+  }
 
-    const list = shuffle(participants.slice());
-    const wrapper = document.getElementById('wrapper');
-
-    // 카드 생성
-    list.forEach((p, idx) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="name">${p.name}</div>
-        <div class="track"><div class="line" id="line-${idx}"></div></div>
-        <div class="drink">${p.drink}</div>
-      `;
-      wrapper.appendChild(card);
+  // 3) 경로 계산
+  function computePaths(){
+    return all.map((_,i)=>{
+      let cx=i, cy=0;
+      const path = [{x:cx,y:cy}];
+      while(cy<rows){
+        if(cx<cols-1 && rungs[cy][cx]) cx++;
+        else if(cx>0 && rungs[cy][cx-1]) cx--;
+        cy++;
+        path.push({x:cx,y:cy});
+      }
+      return path;
     });
+  }
 
-    // 애니메이션 시작: 약간의 딜레이를 주어서 연속으로 내려가는 느낌
-    list.forEach((_, idx) => {
-      const line = document.getElementById(`line-${idx}`);
-      // 딜레이: idx * 200ms
-      setTimeout(() => {
-        line.style.height = '200px'; 
-      }, idx * 200);
+  // 4) 애니메이션
+  function animate(){
+    drawLadder();
+    const paths = computePaths();
+    const speed = 50; // ms
+    let pIndex=0;
+
+    function animateOne(){
+      const path = paths[pIndex];
+      let step=0;
+      const max = path.length;
+      const color = all[pIndex].color;
+      ctx.lineWidth=4; ctx.strokeStyle=color;
+      const interval = setInterval(()=>{
+        // 그릴 이전까지의 라인
+        if(step>0){
+          ctx.beginPath();
+          const prev = path[step-1], curr = path[step];
+          const x1=margin+prev.x*colW, y1=margin+prev.y*rowH;
+          const x2=margin+curr.x*colW, y2=margin+curr.y*rowH;
+          ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        }
+        step++;
+        if(step>=max){
+          clearInterval(interval);
+          pIndex++;
+          if(pIndex<paths.length){
+            setTimeout(animateOne, 200);
+          } else {
+            showResults();
+          }
+        }
+      }, speed);
+    }
+    animateOne();
+  }
+
+  // 5) 결과 하이라이트
+  function showResults(){
+    const results = document.getElementById('results');
+    results.innerHTML = '';
+    // 벌칙자
+    const li0 = document.createElement('li');
+    li0.className='punishment';
+    li0.textContent = `🏴 ${punishment.name} → ${punishment.drink}`;
+    results.appendChild(li0);
+    // 당첨자: 샷 추가 음료 찾기
+    const winner = all.find(p=>p.drink.includes('샷'));
+    const li1 = document.createElement('li');
+    li1.className='winner';
+    li1.textContent = `🎉 ${winner.name} → ${winner.drink}`;
+    results.appendChild(li1);
+    // 나머지
+    all.forEach(p=>{
+      if(p!==punishment && p!==winner){
+        const li = document.createElement('li');
+        li.textContent = `${p.name} → ${p.drink}`;
+        results.appendChild(li);
+      }
     });
+  }
+
+  document.getElementById('startBtn').addEventListener('click', animate);
+  // 자동 실행
+  animate();
   </script>
 </body>
 </html>
