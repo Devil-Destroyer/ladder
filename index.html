@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <!-- 모바일 대응 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>사다리게임 애니메이션</title>
 
   <!-- 카톡 링크 썸네일용 OG 태그 -->
-  <meta property="og:title" content="사다리게임" />
-  <meta property="og:description" content="전체 결과 확인하기" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/ladder_thumbnail.png" />
-  <meta property="og:url" content="https://devil-destroyer.github.io/ladder/" />
+  <meta property="og:title" content="사다리게임">
+  <meta property="og:description" content="전체 결과 확인하기">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/ladder_thumbnail.png">
+  <meta property="og:url" content="https://devil-destroyer.github.io/ladder/">
 
   <style>
     body { margin:0; padding:1rem; font-family:sans-serif; background:#fafafa; text-align:center; }
@@ -33,22 +33,22 @@
   <ul id="results"></ul>
 
   <script>
-    // 참가자 + 음료 + 프로필 이미지 파일명 + 색
+    // 1) 참가자 + 음료 + 프로필 이미지 파일명 + 색
     const participants = [
-      {name:"Jinsoo",        drink:"아이스아메리카노",        image:"Jinsoo.png",          color:"#3498db"},
-      {name:"세미",          drink:"원하는 음료 선택!!!",       image:"semi.png",           color:"#9b59b6"},
-      {name:"구자건",        drink:"아이스아메리카노",        image:"guagain.png",        color:"#e67e22"},
-      {name:"김만성",        drink:"아이스아메리카노",        image:"kimmanseong.png",     color:"#1abc9c"},
-      {name:"김세봉",        drink:"원하는 음료 선택!!!",       image:"kimsebung.png",      color:"#f1c40f"},
-      {name:"김철동",        drink:"아이스아메리카노",        image:"kimcheoldong.png",    color:"#e84393"},
-      {name:"김태호",        drink:"아이스아메리카노",        image:"kimtaeho.png",       color:"#00cec9"},
-      {name:"신유선",        drink:"원하는 음료 선택!!!",       image:"sinyuseon.png",      color:"#0984e3"},
-      {name:"가보자고~~",   drink:"아이스아메리카노",        image:"gaboja.png",         color:"#d63031"},
-      {name:"엄기종",        drink:"아이스아메리카노",        image:"eomgijong.png",      color:"#6c5ce7"},
+      {name:"Jinsoo",        drink:"아이스아메리카노",         image:"Jinsoo.png",          color:"#3498db"},
+      {name:"세미",          drink:"원하는 음료 선택!!!",        image:"semi.png",           color:"#9b59b6"},
+      {name:"구자건",        drink:"아이스아메리카노",         image:"guagain.png",        color:"#e67e22"},
+      {name:"김만성",        drink:"아이스아메리카노",         image:"kimmanseong.png",     color:"#1abc9c"},
+      {name:"김세봉",        drink:"원하는 음료 선택!!!",        image:"kimsebung.png",      color:"#f1c40f"},
+      {name:"김철동",        drink:"아이스아메리카노",         image:"kimcheoldong.png",    color:"#e84393"},
+      {name:"김태호",        drink:"아이스아메리카노",         image:"kimtaeho.png",       color:"#00cec9"},
+      {name:"신유선",        drink:"원하는 음료 선택!!!",        image:"sinyuseon.png",      color:"#0984e3"},
+      {name:"가보자고~~",   drink:"아이스아메리카노",         image:"gaboja.png",         color:"#d63031"},
+      {name:"엄기종",        drink:"아이스아메리카노",         image:"eomgijong.png",      color:"#6c5ce7"},
       {name:"이재승",        drink:"아샷추 2잔 with someone...", image:"leejaeseung.png",    color:"#00b894"},
-      {name:"전덕성(베드로)",drink:"아이스아메리카노",        image:"jeondeokseong.png",  color:"#fdcb6e"}
+      {name:"전덕성(베드로)",drink:"아이스아메리카노",         image:"jeondeokseong.png",  color:"#fdcb6e"}
     ];
-    // 벌칙자 고정
+    // 2) 벌칙자 고정
     const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", image:"imsanghyuk.png", color:"#e74c3c"};
 
     const all = [punishment, ...participants];
@@ -72,21 +72,21 @@
       Array.from({length: cols - 1}, () => Math.random() < 0.4)
     );
 
-    // 프로필 이미지 로드
-    const baseUrl = 'https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/images/';
+    // 3) 프로필 이미지 로드 (루트 폴더 기준)
+    const baseUrl = 'https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/';
     const images = all.map(p => {
       const img = new Image();
       img.src = baseUrl + encodeURIComponent(p.image);
-      // 로드 완료되면 판 다시 그리기
       img.onload = drawLadder;
       img.onerror = drawLadder;
       return img;
     });
 
-    // 사다리판 + 프로필 + 이름 + 기본 회색선 + 가로막대 그리기
+    // 4) 사다리판 + 프로필 + 이름 + 기본 회색선 + 가로막대 그리기
     function drawLadder() {
       ctx.clearRect(0, 0, cw, ch);
       ctx.font = "14px sans-serif";
+
       // 프로필 & 이름
       all.forEach((p, i) => {
         const x = marginX + i * colW;
@@ -102,7 +102,8 @@
         ctx.textAlign = "center";
         ctx.fillText(p.name, x, marginY + imgH + nameH - 4);
       });
-      // 세로 기본선
+
+      // 기본 세로선
       ctx.strokeStyle = "#ccc";
       ctx.lineWidth = 2;
       for (let i = 0; i < cols; i++) {
@@ -112,6 +113,7 @@
         ctx.lineTo(x, marginY + imgH + nameH + rowH * rows);
         ctx.stroke();
       }
+
       // 가로막대
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols - 1; x++) {
@@ -127,7 +129,7 @@
       }
     }
 
-    // 경로 계산 (90° 지그재그)
+    // 5) 경로 계산 (90° 지그재그)
     function computePaths() {
       return all.map((_, idx) => {
         let cx = idx, cy = 0;
@@ -146,16 +148,18 @@
       });
     }
 
-    // 애니메이션: 한 사람씩 차례대로
+    // 6) 애니메이션: 한 사람씩 차례대로
     function animate() {
       drawLadder();
       const paths = computePaths();
       let i = 0;
+
       function drawOne() {
         const path = paths[i];
         let step = 0;
         ctx.lineWidth = 4;
         ctx.strokeStyle = all[i].color;
+
         const timer = setInterval(() => {
           if (step > 0) {
             const p0 = path[step - 1], p1 = path[step];
@@ -180,24 +184,28 @@
           }
         }, 100);
       }
+
       drawOne();
     }
 
-    // 결과 하이라이트
+    // 7) 결과 하이라이트
     function showResults() {
       const ul = document.getElementById('results');
       ul.innerHTML = '';
+
       // 벌칙자
       const li0 = document.createElement('li');
       li0.className = 'punishment';
       li0.textContent = `🏴 ${punishment.name} → ${punishment.drink}`;
       ul.appendChild(li0);
+
       // 샷 당첨자
       const winner = participants.find(p => p.drink.includes('샷'));
       const li1 = document.createElement('li');
       li1.className = 'winner';
       li1.textContent = `🎉 ${winner.name} → ${winner.drink}`;
       ul.appendChild(li1);
+
       // 나머지
       participants.forEach(p => {
         if (p !== winner) {
