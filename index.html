@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <!-- 모바일 대응 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>사다리게임 애니메이션</title>
   <style>
     body { margin:0; padding:1rem; font-family:sans-serif; background:#fafafa; }
     h1 { text-align:center; margin-bottom:1rem; }
     #canvas-wrap { overflow-x:auto; }
-    canvas { background:#fff; display:block; margin:0 auto; }
+    canvas { display:block; margin:0 auto; background:#fff; }
     #results { margin-top:1rem; font-size:1rem; }
     #results li { margin:0.5rem 0; }
     .punishment { color:#e74c3c; font-weight:bold; }
@@ -20,138 +21,148 @@
   <h1>🎯 사다리게임</h1>
   <button id="startBtn">사다리 타기</button>
   <div id="canvas-wrap">
-    <canvas id="ladder" width="800" height="500"></canvas>
+    <canvas id="ladder"></canvas>
   </div>
   <ul id="results"></ul>
 
   <script>
-  // 1) 참가자 & 음료 & 색
+  // 참가자 + 음료 + 벌칙자 + 이미지 파일 이름
   const participants = [
-    {name:"Jinsoo", drink:"아이스아메리카노", color:"#3498db"},
-    {name:"세미",   drink:"원하는 음료 선택!!!", color:"#9b59b6"},
-    {name:"구자건", drink:"아이스아메리카노", color:"#e67e22"},
-    {name:"김만성", drink:"아이스아메리카노", color:"#1abc9c"},
-    {name:"김세봉", drink:"원하는 음료 선택!!!", color:"#f1c40f"},
-    {name:"김철동", drink:"아이스아메리카노", color:"#e84393"},
-    {name:"김태호", drink:"아이스아메리카노", color:"#00cec9"},
-    {name:"신유선", drink:"원하는 음료 선택!!!", color:"#0984e3"},
-    {name:"가보자고~~", drink:"아이스아메리카노", color:"#d63031"},
-    {name:"엄기종", drink:"아이스아메리카노", color:"#6c5ce7"},
-    {name:"이재승", drink:"아샷추 2잔 with someone...", color:"#00b894"},
-    {name:"전덕성(베드로)", drink:"아이스아메리카노", color:"#fdcb6e"}
+    {name:"Jinsoo",        drink:"아이스아메리카노", image:"Jinsoo.png"},
+    {name:"세미",          drink:"원하는 음료 선택!!!", image:"세미.png"},
+    {name:"구자건",        drink:"아이스아메리카노", image:"구자건.png"},
+    {name:"김만성",        drink:"아이스아메리카노", image:"김만성.png"},
+    {name:"김세봉",        drink:"원하는 음료 선택!!!", image:"김세봉.png"},
+    {name:"김철동",        drink:"아이스아메리카노", image:"김철동.png"},
+    {name:"김태호",        drink:"아이스아메리카노", image:"김태호.png"},
+    {name:"신유선",        drink:"원하는 음료 선택!!!", image:"신유선.png"},
+    {name:"가보자고~~",   drink:"아이스아메리카노", image:"가보자고~~.png"},
+    {name:"엄기종",        drink:"아이스아메리카노", image:"엄기종.png"},
+    {name:"이재승",        drink:"아샷추 2잔 with someone...", image:"이재승.png"},
+    {name:"전덕성(베드로)", drink:"아이스아메리카노", image:"전덕성(베드로).png"}
   ];
-  const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", color:"#e74c3c"};
-  const all = [punishment, ...participants];
+  const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", image:"임상혁.png"};
 
-  const canvas = document.getElementById('ladder');
-  const ctx = canvas.getContext('2d');
+  const all = [punishment, ...participants];
   const cols = all.length;
   const rows = 12;
   const margin = 50;
-  const cw = canvas.width;
-  const ch = canvas.height;
-  const colW = (cw - margin*2) / (cols-1);
-  const rowH = (ch - margin*2) / rows;
+  const colW = 100;
+  const rowH = 30;
+  const cw = margin*2 + colW*(cols-1);
+  const ch = margin*2 + rowH*rows;
 
-  // 2) 랜덤 사다리 가로줄
+  // 캔버스 사이즈 설정
+  const canvas = document.getElementById('ladder');
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext('2d');
+
+  // 사다리 가로줄
   const rungs = Array.from({length:rows}, () =>
-    Array.from({length:cols-1}, () => Math.random()<0.4)
+    Array.from({length:cols-1}, () => Math.random() < 0.4)
   );
 
-  function drawLadder(){
+  // 참가자 사진 미리 로드
+  const baseImgUrl = 'https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/';
+  const images = [];
+  all.forEach((p, i) => {
+    const img = new Image();
+    img.src = baseImgUrl + encodeURIComponent(p.image);
+    images[i] = img;
+  });
+
+  // 사다리판 그리기 (회색 기본선 제거)
+  function drawLadder() {
     ctx.clearRect(0,0,cw,ch);
-    ctx.strokeStyle='#999'; ctx.lineWidth=2;
-    // 세로줄
-    for(let i=0;i<cols;i++){
-      const x = margin + i*colW;
-      ctx.beginPath(); ctx.moveTo(x,margin); ctx.lineTo(x,ch-margin); ctx.stroke();
-      // 이름 그리기
-      ctx.fillStyle = all[i].color;
-      ctx.textAlign='center'; ctx.font='14px sans-serif';
-      ctx.fillText(all[i].name, x, margin - 20);
-    }
-    // 가로줄
-    for(let y=0;y<rows;y++){
-      for(let x=0;x<cols-1;x++){
-        if(rungs[y][x]){
-          const x1=margin + x*colW;
-          const y1=margin + y*rowH;
-          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+colW,y1); ctx.stroke();
-        }
-      }
-    }
+    // 이름 위에 사진
+    images.forEach((img, i) => {
+      const x = margin + i*colW - 20;
+      ctx.drawImage(img, x, 0, 40, 40);
+    });
   }
 
-  // 3) 경로 계산
-  function computePaths(){
-    return all.map((_,i)=>{
-      let cx=i, cy=0;
+  // 경로 계산 (90도 지그재그)
+  function computePaths() {
+    return all.map((_, idx) => {
+      let cx = idx, cy = 0;
       const path = [{x:cx,y:cy}];
-      while(cy<rows){
-        if(cx<cols-1 && rungs[cy][cx]) cx++;
-        else if(cx>0 && rungs[cy][cx-1]) cx--;
-        cy++;
-        path.push({x:cx,y:cy});
+      for(let y=0; y<rows; y++){
+        if(rungs[y][cx]){
+          // 오른쪽 이동
+          path.push({x:cx+1, y:y});
+          cx++;
+        } else if(cx>0 && rungs[y][cx-1]){
+          // 왼쪽 이동
+          path.push({x:cx-1, y:y});
+          cx--;
+        }
+        // 아래로 이동
+        path.push({x:cx, y:y+1});
       }
       return path;
     });
   }
 
-  // 4) 애니메이션
-  function animate(){
+  // 애니메이션
+  function animate() {
     drawLadder();
     const paths = computePaths();
-    const speed = 50; // ms
-    let pIndex=0;
+    const speed = 100; // ms
+    let i=0;
 
-    function animateOne(){
-      const path = paths[pIndex];
-      let step=0;
-      const max = path.length;
-      const color = all[pIndex].color;
-      ctx.lineWidth=4; ctx.strokeStyle=color;
-      const interval = setInterval(()=>{
-        // 그릴 이전까지의 라인
+    function next() {
+      const path = paths[i];
+      let step = 0;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = (i===0?'#e74c3c':'#3498db'); // 벌칙자 빨강, 나머지 파랑
+
+      const timer = setInterval(()=>{
         if(step>0){
-          ctx.beginPath();
           const prev = path[step-1], curr = path[step];
-          const x1=margin+prev.x*colW, y1=margin+prev.y*rowH;
-          const x2=margin+curr.x*colW, y2=margin+curr.y*rowH;
-          ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+          const x1 = margin + prev.x*colW;
+          const y1 = margin + prev.y*rowH + 40;
+          const x2 = margin + curr.x*colW;
+          const y2 = margin + curr.y*rowH + 40;
+          ctx.beginPath();
+          ctx.moveTo(x1,y1);
+          ctx.lineTo(x2,y2);
+          ctx.stroke();
         }
         step++;
-        if(step>=max){
-          clearInterval(interval);
-          pIndex++;
-          if(pIndex<paths.length){
-            setTimeout(animateOne, 200);
+        if(step >= path.length){
+          clearInterval(timer);
+          i++;
+          if(i<paths.length){
+            setTimeout(next, 200);
           } else {
             showResults();
           }
         }
       }, speed);
     }
-    animateOne();
+
+    next();
   }
 
-  // 5) 결과 하이라이트
-  function showResults(){
+  // 결과 표시
+  function showResults() {
     const results = document.getElementById('results');
     results.innerHTML = '';
     // 벌칙자
     const li0 = document.createElement('li');
-    li0.className='punishment';
+    li0.className = 'punishment';
     li0.textContent = `🏴 ${punishment.name} → ${punishment.drink}`;
     results.appendChild(li0);
-    // 당첨자: 샷 추가 음료 찾기
-    const winner = all.find(p=>p.drink.includes('샷'));
+    // 당첨자 (샷)
+    const winner = participants.find(p=>p.drink.includes('샷'));
     const li1 = document.createElement('li');
-    li1.className='winner';
+    li1.className = 'winner';
     li1.textContent = `🎉 ${winner.name} → ${winner.drink}`;
     results.appendChild(li1);
     // 나머지
-    all.forEach(p=>{
-      if(p!==punishment && p!==winner){
+    participants.forEach(p=>{
+      if(p!==winner){
         const li = document.createElement('li');
         li.textContent = `${p.name} → ${p.drink}`;
         results.appendChild(li);
@@ -159,8 +170,8 @@
     });
   }
 
-  document.getElementById('startBtn').addEventListener('click', animate);
-  // 자동 실행
+  document.getElementById('startBtn').onclick = animate;
+  // 자동 시작
   animate();
   </script>
 </body>
