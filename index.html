@@ -1,17 +1,61 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>사다리게임</title>
-  <!-- OG 메타태그 : 카톡 썸네일용 -->
-  <meta property="og:title" content="사다리게임">
-  <meta property="og:description" content="전체 결과 확인하기">
-  <meta property="og:image" content="https://your.cdn.url/ladder_thumbnail.png">
-  <meta property="og:url" content="https://your.github.io/ladder-preview/">
-  <!-- 클릭 즉시 실제 결과 페이지로 리다이렉트 -->
-  <meta http-equiv="refresh" content="0;url=https://script.google.com/macros/s/AKfycbxXFD-FumakVk68x6n7edvGBqDIuBs9V_9ld0N0aGT907C-e8UzQh_BncDLkMPDIES4/exec">
+
+  <!-- 카톡 링크 썸네일용 OG 태그 -->
+  <meta property="og:title" content="사다리게임" />
+  <meta property="og:description" content="전체 결과 확인하기" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/ladder_thumbnail.png" />
+  <meta property="og:url" content="https://devil-destroyer.github.io/ladder/" />
+
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    pre { background: #f5f5f5; padding: 1rem; }
+  </style>
 </head>
 <body>
-  <p>잠시만 기다려 주세요…</p>
+  <h1>🎯 사다리 결과 🎯</h1>
+  <pre id="result">잠시만 기다려 주세요…</pre>
+
+  <script>
+    // 참가자+음료 리스트
+    const participants = [
+      {name:"Jinsoo", drink:"아이스아메리카노"},
+      {name:"세미", drink:"원하는 음료 선택!!!"},
+      {name:"구자건", drink:"아이스아메리카노"},
+      {name:"김만성", drink:"아이스아메리카노"},
+      {name:"김세봉", drink:"원하는 음료 선택!!!"},
+      {name:"김철동", drink:"아이스아메리카노"},
+      {name:"김태호", drink:"아이스아메리카노"},
+      {name:"신유선", drink:"원하는 음료 선택!!!"},
+      {name:"가보자고~~", drink:"아이스아메리카노"},
+      {name:"엄기종", drink:"아이스아메리카노"},
+      {name:"이재승", drink:"아샷추 2잔 with someone..."},
+      {name:"전덕성(베드로)", drink:"아이스아메리카노"}
+    ];
+    const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가"};
+
+    // 배열 섞기 함수
+    function shuffle(arr) {
+      for(let i=arr.length-1; i>0; i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    // 결과 출력
+    (function render() {
+      const list = shuffle(participants.slice());
+      let text = "———————————\n";
+      text += `${punishment.name} → 😈 벌칙!! → ${punishment.drink}\n`;
+      list.forEach(p => {
+        text += `${p.name} → 🎉 성공!! → ${p.drink}\n`;
+      });
+      document.getElementById("result").textContent = text;
+    })();
+  </script>
 </body>
 </html>
