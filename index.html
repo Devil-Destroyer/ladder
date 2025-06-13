@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <!-- 1) 모바일 화면 대응 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>사다리게임</title>
 
   <!-- 카톡 링크 썸네일용 OG 태그 -->
@@ -11,8 +14,27 @@
   <meta property="og:url" content="https://devil-destroyer.github.io/ladder/" />
 
   <style>
-    body { font-family: sans-serif; padding: 1rem; }
-    pre { background: #f5f5f5; padding: 1rem; }
+    body {
+      margin: 0;
+      padding: 1rem;
+      font-family: sans-serif;
+      font-size: 1.2rem;      /* 기본 텍스트 크기 */
+      line-height: 1.5;       /* 줄간격 */
+      background: #fafafa;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      font-size: 1rem;        /* 코드 블럭 글자 크기 */
+      white-space: pre-wrap;  /* 자동 줄 바꿈 */
+      word-break: keep-all;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
   </style>
 </head>
 <body>
@@ -39,9 +61,9 @@
 
     // 배열 섞기 함수
     function shuffle(arr) {
-      for(let i=arr.length-1; i>0; i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]] = [arr[j],arr[i]];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
     }
