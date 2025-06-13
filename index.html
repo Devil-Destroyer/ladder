@@ -1,178 +1,195 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <!-- 모바일 대응 -->
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>사다리게임 애니메이션</title>
   <style>
-    body { margin:0; padding:1rem; font-family:sans-serif; background:#fafafa; }
-    h1 { text-align:center; margin-bottom:1rem; }
-    #canvas-wrap { overflow-x:auto; }
-    canvas { display:block; margin:0 auto; background:#fff; }
-    #results { margin-top:1rem; font-size:1rem; }
-    #results li { margin:0.5rem 0; }
+    body { margin:0; padding:1rem; font-family:sans-serif; background:#fafafa; text-align:center; }
+    canvas { background:#fff; display:block; margin:0 auto; }
+    button { margin-bottom:1rem; padding:.5rem 1rem; font-size:1rem; }
+    #results { margin-top:1rem; list-style:none; padding:0; }
+    #results li { margin:.5rem 0; }
     .punishment { color:#e74c3c; font-weight:bold; }
     .winner     { color:#27ae60; font-weight:bold; }
-    button { display:block; margin:0 auto 1rem; padding:0.5rem 1rem; font-size:1rem; }
   </style>
 </head>
 <body>
   <h1>🎯 사다리게임</h1>
   <button id="startBtn">사다리 타기</button>
-  <div id="canvas-wrap">
-    <canvas id="ladder"></canvas>
-  </div>
+  <canvas id="ladder"></canvas>
   <ul id="results"></ul>
 
   <script>
-  // 참가자 + 음료 + 벌칙자 + 이미지 파일 이름
+  // 참가자+벌칙자+음료+사진파일
   const participants = [
-    {name:"Jinsoo",        drink:"아이스아메리카노", image:"Jinsoo.png"},
-    {name:"세미",          drink:"원하는 음료 선택!!!", image:"세미.png"},
-    {name:"구자건",        drink:"아이스아메리카노", image:"구자건.png"},
-    {name:"김만성",        drink:"아이스아메리카노", image:"김만성.png"},
-    {name:"김세봉",        drink:"원하는 음료 선택!!!", image:"김세봉.png"},
-    {name:"김철동",        drink:"아이스아메리카노", image:"김철동.png"},
-    {name:"김태호",        drink:"아이스아메리카노", image:"김태호.png"},
-    {name:"신유선",        drink:"원하는 음료 선택!!!", image:"신유선.png"},
-    {name:"가보자고~~",   drink:"아이스아메리카노", image:"가보자고~~.png"},
-    {name:"엄기종",        drink:"아이스아메리카노", image:"엄기종.png"},
-    {name:"이재승",        drink:"아샷추 2잔 with someone...", image:"이재승.png"},
-    {name:"전덕성(베드로)", drink:"아이스아메리카노", image:"전덕성(베드로).png"}
+    {name:"Jinsoo",        drink:"아이스아메리카노",        image:"Jinsoo.png",        color:"#3498db"},
+    {name:"세미",          drink:"원하는 음료 선택!!!",       image:"세미.png",          color:"#9b59b6"},
+    {name:"구자건",        drink:"아이스아메리카노",        image:"구자건.png",        color:"#e67e22"},
+    {name:"김만성",        drink:"아이스아메리카노",        image:"김만성.png",        color:"#1abc9c"},
+    {name:"김세봉",        drink:"원하는 음료 선택!!!",       image:"김세봉.png",        color:"#f1c40f"},
+    {name:"김철동",        drink:"아이스아메리카노",        image:"김철동.png",        color:"#e84393"},
+    {name:"김태호",        drink:"아이스아메리카노",        image:"김태호.png",        color:"#00cec9"},
+    {name:"신유선",        drink:"원하는 음료 선택!!!",       image:"신유선.png",        color:"#0984e3"},
+    {name:"가보자고~~",   drink:"아이스아메리카노",        image:"가보자고~~.png",    color:"#d63031"},
+    {name:"엄기종",        drink:"아이스아메리카노",        image:"엄기종.png",        color:"#6c5ce7"},
+    {name:"이재승",        drink:"아샷추 2잔 with someone...", image:"이재승.png",        color:"#00b894"},
+    {name:"전덕성(베드로)",drink:"아이스아메리카노",        image:"전덕성(베드로).png", color:"#fdcb6e"}
   ];
-  const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", image:"임상혁.png"};
-
+  const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가", image:"임상혁.png", color:"#e74c3c"};
+  
   const all = [punishment, ...participants];
-  const cols = all.length;
-  const rows = 12;
-  const margin = 50;
+  const cols = all.length, rows = 12;
+  
+  // 레이아웃 상수
+  const marginX = 50;
+  const marginY = 20;
+  const imgH = 40, nameH = 20;
   const colW = 100;
   const rowH = 30;
-  const cw = margin*2 + colW*(cols-1);
-  const ch = margin*2 + rowH*rows;
-
-  // 캔버스 사이즈 설정
+  const canvasWidth  = marginX*2 + colW*(cols-1);
+  const canvasHeight = marginY + imgH + nameH + rowH*rows + marginY;
+  
+  // 캔버스 세팅
   const canvas = document.getElementById('ladder');
-  canvas.width = cw;
-  canvas.height = ch;
+  canvas.width  = canvasWidth;
+  canvas.height = canvasHeight;
   const ctx = canvas.getContext('2d');
-
-  // 사다리 가로줄
+  
+  // 이미지 로드
+  const baseUrl = 'https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/';
+  let loaded = 0;
+  const images = all.map(p => {
+    const img = new Image();
+    img.src = baseUrl + encodeURIComponent(p.image);
+    img.onload = () => { if (++loaded === all.length) drawLadder(); };
+    return img;
+  });
+  
+  // 사다리 가로줄 생성
   const rungs = Array.from({length:rows}, () =>
     Array.from({length:cols-1}, () => Math.random() < 0.4)
   );
-
-  // 참가자 사진 미리 로드
-  const baseImgUrl = 'https://raw.githubusercontent.com/Devil-Destroyer/ladder/main/';
-  const images = [];
-  all.forEach((p, i) => {
-    const img = new Image();
-    img.src = baseImgUrl + encodeURIComponent(p.image);
-    images[i] = img;
-  });
-
-  // 사다리판 그리기 (회색 기본선 제거)
+  
+  // 사다리판 + 사진 + 이름 그리기
   function drawLadder() {
-    ctx.clearRect(0,0,cw,ch);
-    // 이름 위에 사진
-    images.forEach((img, i) => {
-      const x = margin + i*colW - 20;
-      ctx.drawImage(img, x, 0, 40, 40);
+    ctx.clearRect(0,0,canvasWidth,canvasHeight);
+    // 사진
+    all.forEach((p,i) => {
+      const x = marginX + i*colW - 20;
+      ctx.drawImage(images[i], x, marginY, 40, imgH);
+      ctx.fillStyle = "#333";
+      ctx.textAlign = "center";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(p.name, marginX + i*colW, marginY + imgH + nameH - 4);
     });
+    // 회색선 (선택적으로 숨기려면 주석 처리)
+    ctx.strokeStyle = "#ccc";
+    ctx.lineWidth = 2;
+    for(let i=0; i<cols; i++){
+      const x = marginX + i*colW;
+      ctx.beginPath();
+      ctx.moveTo(x, marginY + imgH + nameH);
+      ctx.lineTo(x, marginY + imgH + nameH + rowH*rows);
+      ctx.stroke();
+    }
+    // 가로 막대
+    for(let y=0; y<rows; y++){
+      for(let x=0; x<cols-1; x++){
+        if(rungs[y][x]){
+          const x1 = marginX + x*colW;
+          const y1 = marginY + imgH + nameH + y*rowH;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x1+colW, y1);
+          ctx.stroke();
+        }
+      }
+    }
   }
-
+  
   // 경로 계산 (90도 지그재그)
   function computePaths() {
-    return all.map((_, idx) => {
+    return all.map((_,idx) => {
       let cx = idx, cy = 0;
       const path = [{x:cx,y:cy}];
       for(let y=0; y<rows; y++){
         if(rungs[y][cx]){
-          // 오른쪽 이동
-          path.push({x:cx+1, y:y});
-          cx++;
+          cx++; path.push({x:cx,y:y});
         } else if(cx>0 && rungs[y][cx-1]){
-          // 왼쪽 이동
-          path.push({x:cx-1, y:y});
-          cx--;
+          cx--; path.push({x:cx,y:y});
         }
-        // 아래로 이동
-        path.push({x:cx, y:y+1});
+        path.push({x:cx,y:y+1});
       }
       return path;
     });
   }
-
+  
   // 애니메이션
   function animate() {
     drawLadder();
     const paths = computePaths();
-    const speed = 100; // ms
-    let i=0;
-
+    let i = 0;
     function next() {
       const path = paths[i];
       let step = 0;
       ctx.lineWidth = 4;
-      ctx.strokeStyle = (i===0?'#e74c3c':'#3498db'); // 벌칙자 빨강, 나머지 파랑
-
-      const timer = setInterval(()=>{
-        if(step>0){
-          const prev = path[step-1], curr = path[step];
-          const x1 = margin + prev.x*colW;
-          const y1 = margin + prev.y*rowH + 40;
-          const x2 = margin + curr.x*colW;
-          const y2 = margin + curr.y*rowH + 40;
+      ctx.strokeStyle = all[i].color;
+      const timer = setInterval(() => {
+        if(step > 0) {
+          const p0 = path[step-1], p1 = path[step];
+          const x0 = marginX + p0.x*colW;
+          const y0 = marginY + imgH + nameH + p0.y*rowH;
+          const x1 = marginX + p1.x*colW;
+          const y1 = marginY + imgH + nameH + p1.y*rowH;
           ctx.beginPath();
-          ctx.moveTo(x1,y1);
-          ctx.lineTo(x2,y2);
+          ctx.moveTo(x0,y0);
+          ctx.lineTo(x1,y1);
           ctx.stroke();
         }
         step++;
         if(step >= path.length){
           clearInterval(timer);
           i++;
-          if(i<paths.length){
+          if(i < paths.length){
             setTimeout(next, 200);
           } else {
             showResults();
           }
         }
-      }, speed);
+      }, 100);
     }
-
     next();
   }
-
-  // 결과 표시
+  
+  // 결과 출력
   function showResults() {
-    const results = document.getElementById('results');
-    results.innerHTML = '';
+    const ul = document.getElementById('results');
+    ul.innerHTML = '';
     // 벌칙자
     const li0 = document.createElement('li');
     li0.className = 'punishment';
     li0.textContent = `🏴 ${punishment.name} → ${punishment.drink}`;
-    results.appendChild(li0);
-    // 당첨자 (샷)
+    ul.appendChild(li0);
+    // 샷 당첨자
     const winner = participants.find(p=>p.drink.includes('샷'));
     const li1 = document.createElement('li');
     li1.className = 'winner';
     li1.textContent = `🎉 ${winner.name} → ${winner.drink}`;
-    results.appendChild(li1);
+    ul.appendChild(li1);
     // 나머지
     participants.forEach(p=>{
-      if(p!==winner){
+      if(p !== winner){
         const li = document.createElement('li');
         li.textContent = `${p.name} → ${p.drink}`;
-        results.appendChild(li);
+        ul.appendChild(li);
       }
     });
   }
-
-  document.getElementById('startBtn').onclick = animate;
+  
+  document.getElementById('startBtn').addEventListener('click', animate);
   // 자동 시작
-  animate();
+  // animate();
   </script>
 </body>
 </html>
