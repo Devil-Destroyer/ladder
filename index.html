@@ -196,21 +196,21 @@
       // 벌칙자
       const li0 = document.createElement('li');
       li0.className = 'punishment';
-      li0.textContent = `🏴 ${punishment.name} → ${punishment.drink}`;
+      li0.textContent = 🏴 ${punishment.name} → ${punishment.drink};
       ul.appendChild(li0);
 
       // 샷 당첨자
       const winner = participants.find(p => p.drink.includes('샷'));
       const li1 = document.createElement('li');
       li1.className = 'winner';
-      li1.textContent = `🎉 ${winner.name} → ${winner.drink}`;
+      li1.textContent = 🎉 ${winner.name} → ${winner.drink};
       ul.appendChild(li1);
 
       // 나머지
       participants.forEach(p => {
         if (p !== winner) {
           const li = document.createElement('li');
-          li.textContent = `${p.name} → ${p.drink}`;
+          li.textContent = ${p.name} → ${p.drink};
           ul.appendChild(li);
         }
       });
@@ -222,4 +222,3 @@
   </script>
 </body>
 </html>
-
