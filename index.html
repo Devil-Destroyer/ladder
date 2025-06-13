@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <!-- 1) 모바일 화면 대응 -->
+  <!-- 모바일 화면 대응 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>사다리게임</title>
@@ -18,8 +18,8 @@
       margin: 0;
       padding: 1rem;
       font-family: sans-serif;
-      font-size: 1.2rem;      /* 기본 텍스트 크기 */
-      line-height: 1.5;       /* 줄간격 */
+      font-size: 1.2rem;
+      line-height: 1.5;
       background: #fafafa;
     }
     h1 {
@@ -29,8 +29,8 @@
     pre {
       background: #f5f5f5;
       padding: 1rem;
-      font-size: 1rem;        /* 코드 블럭 글자 크기 */
-      white-space: pre-wrap;  /* 자동 줄 바꿈 */
+      font-size: 1rem;
+      white-space: pre-wrap;
       word-break: keep-all;
       border-radius: 4px;
       overflow-x: auto;
@@ -44,20 +44,20 @@
   <script>
     // 참가자+음료 리스트
     const participants = [
-      {name:"Jinsoo", drink:"아이스아메리카노"},
-      {name:"세미", drink:"원하는 음료 선택!!!"},
-      {name:"구자건", drink:"아이스아메리카노"},
-      {name:"김만성", drink:"아이스아메리카노"},
-      {name:"김세봉", drink:"원하는 음료 선택!!!"},
-      {name:"김철동", drink:"아이스아메리카노"},
-      {name:"김태호", drink:"아이스아메리카노"},
-      {name:"신유선", drink:"원하는 음료 선택!!!"},
-      {name:"가보자고~~", drink:"아이스아메리카노"},
-      {name:"엄기종", drink:"아이스아메리카노"},
-      {name:"이재승", drink:"아샷추 2잔 with someone..."},
-      {name:"전덕성(베드로)", drink:"아이스아메리카노"}
+      {name:"Jinsoo",             drink:"아이스아메리카노"},
+      {name:"세미",               drink:"원하는 음료 선택!!!"},
+      {name:"구자건",             drink:"아이스아메리카노"},
+      {name:"김만성",             drink:"아이스아메리카노"},
+      {name:"김세봉",             drink:"원하는 음료 선택!!!"},
+      {name:"김철동",             drink:"아이스아메리카노"},
+      {name:"김태호",             drink:"아이스아메리카노"},
+      {name:"신유선",             drink:"원하는 음료 선택!!!"},
+      {name:"가보자고~~",        drink:"아이스아메리카노"},
+      {name:"엄기종",             drink:"아이스아메리카노"},
+      {name:"이재승",             drink:"아샷추 2잔!!!"},
+      {name:"전덕성(베드로)",    drink:"아이스아메리카노"},
+      {name:"Jinsoo",             drink:"아이스아메리카노"} // 예시: 본인 이름 추가
     ];
-    const punishment = {name:"임상혁", drink:"축~당첨: 딸기요거트샷추가"};
 
     // 배열 섞기 함수
     function shuffle(arr) {
@@ -71,11 +71,10 @@
     // 결과 출력
     (function render() {
       const list = shuffle(participants.slice());
-      let text = "———————————\n";
-      text += `${punishment.name} → 😈 벌칙!! → ${punishment.drink}\n`;
-      list.forEach(p => {
-        text += `${p.name} → 🎉 성공!! → ${p.drink}\n`;
-      });
+      // 각 사람당 "이름 → 음료" 형태로, 한 줄 띄어서 구분
+      const text = list
+        .map(p => `${p.name} → ${p.drink}`)
+        .join('\n\n');
       document.getElementById("result").textContent = text;
     })();
   </script>
